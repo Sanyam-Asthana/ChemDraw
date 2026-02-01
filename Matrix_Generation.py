@@ -1,5 +1,6 @@
 from rdkit import Chem
 import sys
+
 def adjacency_to_smiles(A, atoms):
     emol = Chem.RWMol()
     for a in atoms:
@@ -61,30 +62,79 @@ import itertools
 import numpy as np
 from rdkit import Chem
 
+# def generate_all_structures(atoms, max_valence, DOU):
+#     n = len(atoms)
+#     num_edges = n * (n - 1) // 2
+#     upper_indices = np.triu_indices(n, 1)
+#     matrices = []
+
+#     bond_orders=[]
+#     if DOU>=2:
+#         bond_orders = [0, 1, 2, 3]
+#     elif DOU==1:
+#         bond_orders = [0, 1, 2]
+#     elif DOU==0:
+#         bond_orders = [0, 1]
+        
+        
+#     for bits in itertools.product(bond_orders, repeat=num_edges):
+#         A = np.zeros((n, n), dtype=int)
+#         A[upper_indices] = bits
+#         A += A.T
+
+#         # Valence check
+#         deg = A.sum(axis=0)
+#         if any(deg[i] > max_valence[atoms[i]] for i in range(n)):
+#             continue
+
+#         # Connectivity check
+#         visited = set()
+#         stack = [0]
+#         while stack:
+#             node = stack.pop()
+#             if node not in visited:
+#                 visited.add(node)
+#                 stack.extend([j for j in range(n) if A[node, j] > 0 and j not in visited])
+#         if len(visited) < n:
+#             continue 
+
+#         matrices.append(A.tolist())
+
+#     return matrices
+
+
 def generate_all_structures(atoms, max_valence, DOU):
     n = len(atoms)
     num_edges = n * (n - 1) // 2
-    upper_indices = np.triu_indices(n, 1)
+    rows, cols = np.triu_indices(n, 1)
     matrices = []
 
-    bond_orders=[]
-    if DOU>=2:
+    if DOU >= 2:
         bond_orders = [0, 1, 2, 3]
-    elif DOU==1:
+    elif DOU == 1:
         bond_orders = [0, 1, 2]
-    elif DOU==0:
+    else:
         bond_orders = [0, 1]
-        
-        
-    for bits in itertools.product(bond_orders, repeat=num_edges):
-        A = np.zeros((n, n), dtype=int)
-        A[upper_indices] = bits
-        A += A.T
 
-        # Valence check
-        deg = A.sum(axis=0)
-        if any(deg[i] > max_valence[atoms[i]] for i in range(n)):
+    for bits in itertools.product(bond_orders, repeat=num_edges):
+        valid = True
+        deg = [0] * n
+
+        # Early valence pruning
+        for i, j, b in zip(rows, cols, bits):
+            deg[i] += b
+            deg[j] += b
+            if deg[i] > max_valence[atoms[i]] or deg[j] > max_valence[atoms[j]]:
+                valid = False
+                break
+
+        if not valid:
             continue
+
+        # Build adjacency matrix
+        A = np.zeros((n, n), dtype=int)
+        A[rows, cols] = bits
+        A += A.T
 
         # Connectivity check
         visited = set()
@@ -93,9 +143,10 @@ def generate_all_structures(atoms, max_valence, DOU):
             node = stack.pop()
             if node not in visited:
                 visited.add(node)
-                stack.extend([j for j in range(n) if A[node, j] > 0 and j not in visited])
+                stack.extend(j for j in range(n) if A[node, j] > 0 and j not in visited)
+
         if len(visited) < n:
-            continue 
+            continue
 
         matrices.append(A.tolist())
 
@@ -127,7 +178,6 @@ for A in matrices:
 
 print(f"Unique molecules after deduplication: {len(unique_smiles)}")
 print(unique_smiles)
-
 
 #save the molecules in a json file 
 
