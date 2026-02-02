@@ -62,47 +62,6 @@ import itertools
 import numpy as np
 from rdkit import Chem
 
-# def generate_all_structures(atoms, max_valence, DOU):
-#     n = len(atoms)
-#     num_edges = n * (n - 1) // 2
-#     upper_indices = np.triu_indices(n, 1)
-#     matrices = []
-
-#     bond_orders=[]
-#     if DOU>=2:
-#         bond_orders = [0, 1, 2, 3]
-#     elif DOU==1:
-#         bond_orders = [0, 1, 2]
-#     elif DOU==0:
-#         bond_orders = [0, 1]
-        
-        
-#     for bits in itertools.product(bond_orders, repeat=num_edges):
-#         A = np.zeros((n, n), dtype=int)
-#         A[upper_indices] = bits
-#         A += A.T
-
-#         # Valence check
-#         deg = A.sum(axis=0)
-#         if any(deg[i] > max_valence[atoms[i]] for i in range(n)):
-#             continue
-
-#         # Connectivity check
-#         visited = set()
-#         stack = [0]
-#         while stack:
-#             node = stack.pop()
-#             if node not in visited:
-#                 visited.add(node)
-#                 stack.extend([j for j in range(n) if A[node, j] > 0 and j not in visited])
-#         if len(visited) < n:
-#             continue 
-
-#         matrices.append(A.tolist())
-
-#     return matrices
-
-
 def generate_all_structures(atoms, max_valence, DOU):
     n = len(atoms)
     num_edges = n * (n - 1) // 2

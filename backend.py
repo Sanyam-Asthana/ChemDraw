@@ -18,7 +18,7 @@ def generate():
         return "No formula provided", 400
 
     # run your existing Matrix_Generation.py script with formula and PNG_FILE as output
-    subprocess.run([sys.executable, "Matrix_Generation.py", formula, PNG_FILE], check=True)
+    subprocess.run([sys.executable, "Graph_Theory_Approach.py", formula, PNG_FILE], check=True)
 
     # return a simple response (frontend will reload the <img>)
     return "OK", 200
